@@ -19,7 +19,7 @@ def get_models(model, loss_fn, INPUT_SHAPE, NOISE_DIM):
                 model.add(layers.LeakyReLU())
                 model.add(layers.Dropout(0.3))
 
-                model.add(layers.Dense(INPUT_SHAPE, use_bias=False))
+                model.add(layers.Dense(INPUT_SHAPE[0], use_bias=False))
 
                 return model
 
@@ -29,21 +29,19 @@ def get_models(model, loss_fn, INPUT_SHAPE, NOISE_DIM):
                 model.add(layers.Input(shape=(NOISE_DIM,)))
 
                 model.add(layers.Dense(512, use_bias=False))
-                # model.add(layers.LayerNormalization())
                 model.add(layers.LeakyReLU())
 
                 model.add(layers.Dense(512, use_bias=False))
-                # model.add(layers.LayerNormalization())
                 model.add(layers.LeakyReLU())
                 model.add(layers.Dropout(0.3))
 
-                model.add(layers.Dense(10, use_bias=False))
+                model.add(layers.Dense(INPUT_SHAPE[0], use_bias=False))
 
                 return model
 
         def discriminator(INPUT_SHAPE):
                 model = tf.keras.Sequential()
-                model.add(layers.Input(shape=(INPUT_SHAPE,)))
+                model.add(layers.Input(shape=INPUT_SHAPE))
 
                 model.add(layers.Dense(512))
                 model.add(layers.LeakyReLU())
@@ -53,7 +51,7 @@ def get_models(model, loss_fn, INPUT_SHAPE, NOISE_DIM):
                 model.add(layers.LeakyReLU())
                 model.add(layers.Dropout(0.3))
 
-                model.add(layers.Dense(INPUT_SHAPE))
+                model.add(layers.Dense(INPUT_SHAPE[0]))
                 model.add(layers.Dense(1))
 
                 return model

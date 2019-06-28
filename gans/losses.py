@@ -38,3 +38,24 @@ def get_loss_fns(loss_fn):
         generator_loss, discriminator_loss = wgan_gp()
 
     return generator_loss, discriminator_loss
+
+def gradient_penalty(discriminator, real, fake, BATCH_SIZE):
+        real = tf.cast(real, tf.float32)
+        
+        def _interpolate(a, b):
+            alpha = tf.random.uniform(shape=[BATCH_SIZE, 1], minval=0., maxval=1.)
+            inter = alpha * a + ((1 - alpha) * b)
+            
+            return inter
+
+        x = _interpolate(real, fake)
+        
+        with tf.GradientTape() as t:
+            t.watch(x)
+            pred = discriminator(x)
+            
+        grad = t.gradient(pred, x)
+        slopes = tf.sqrt(tf.reduce_sum(tf.square(grad), axis=[1]))
+        gp = tf.reduce_mean((slopes - 1) ** 2)
+        
+        return gp

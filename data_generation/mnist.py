@@ -29,13 +29,13 @@ class MNISTDS:
 
         return train_dataset
 
-    class MNIST_Scaler():
-        
-        def __init__(self):
-            pass
+class MNIST_Scaler():
+    
+    def __init__(self):
+        pass
 
-        def transform(self, image_data):
-            return (image_data - 127.5) / 127.5
+    def transform(self, image_data):
+        return (image_data - 127.5) / 127.5
 
-        def inverse_transform(self, image_data):
-            return (image_data * 127.5) + 127.5
+    def inverse_transform(self, image_data):
+        return (image_data * 127.5) + 127.5

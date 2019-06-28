@@ -28,10 +28,6 @@ class StressStrainDS:
         return stresses, strain
 
     def generate_dataset(self):
-        MAX_STRAIN = 0.02
-        NUM_STRAINS = 10
-        N_SAMPLES = 60000
-        
         stresses, strains = self.generate_samples(self.MAX_STRAIN, self.NUM_STRAINS, self.N_SAMPLES)
         stresses = np.array(stresses)
         
