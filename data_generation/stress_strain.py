@@ -35,18 +35,25 @@ class StressStrainDS:
         stresses, strains = self.generate_samples(self.MAX_STRAIN, self.NUM_STRAINS, self.N_SAMPLES)
         stresses = np.array(stresses)
         
-        with h5py.File('stress_strain.hdf5', 'w') as f:
+        with h5py.File('./datasets/stress_strain.hdf5', 'w') as f:
             f.create_dataset("stress_curves", data=stresses)
             f.create_dataset("strains", data=strains)
 
     def load_dataset(self):
-        with h5py.File('stress_strain.hdf5', 'r') as f:
-            train_dataset = f['stress_curves']
+        try:
+            with h5py.File('./datasets/stress_strain.hdf5', 'r') as f:
+                train_dataset = f['stress_curves'][:]
+                
+        except OSError:
+            self.generate_dataset()
+
+            with h5py.File('./datasets/stress_strain.hdf5', 'r') as f:
+                train_dataset = f['stress_curves'][:]
 
         return train_dataset
 
     def load_strains(self):
-        with h5py.File('stress_strain.hdf5', 'r') as f:
+        with h5py.File('./datasets/stress_strain.hdf5', 'r') as f:
             strains = f['strains']
 
         return strains

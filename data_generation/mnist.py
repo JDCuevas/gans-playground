@@ -12,12 +12,20 @@ class MNISTDS:
         # Reshape to (n_samples, width, height, n_channels)
         train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
         
-        with h5py.File('mnist.hdf5', 'w') as f:
+        with h5py.File('./datasets/mnist.hdf5', 'w') as f:
             f.create_dataset("images", data=train_images)
 
     def load_dataset(self):
-        with h5py.File('mnist.hdf5', 'r') as f:
-            train_dataset = f['images']
+        try:
+            with h5py.File('./datasets/mnist.hdf5', 'r') as f:
+                train_dataset = f['images'][:]
+
+                
+        except OSError:
+            self.generate_dataset()
+
+            with h5py.File('./datasets/mnist.hdf5', 'r') as f:
+                train_dataset = f['images'][:]
 
         return train_dataset
 

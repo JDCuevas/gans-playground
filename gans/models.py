@@ -37,7 +37,7 @@ def get_models(model, loss_fn, INPUT_SHAPE, NOISE_DIM):
                 model.add(layers.LeakyReLU())
                 model.add(layers.Dropout(0.3))
 
-                model.add(layers.Dense(INPUT_SHAPE, use_bias=False))
+                model.add(layers.Dense(10, use_bias=False))
 
                 return model
 

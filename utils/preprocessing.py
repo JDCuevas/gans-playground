@@ -22,6 +22,6 @@ def preprocess(dataset, batch_size, preprocessing):
     # Batch and shuffle the data
     BUFFER_SIZE = dataset.shape[0] # Number of elements in dataset
 
-    train_dataset = tf.data.Dataset.from_tensor_slices(dataset).shuffle(BUFFER_SIZE).batch(batch_size, drop_remainder=False)
+    train_dataset = tf.data.Dataset.from_tensor_slices(dataset).shuffle(BUFFER_SIZE).batch(batch_size, drop_remainder=True)
 
     return train_dataset, scaler
