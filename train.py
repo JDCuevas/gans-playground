@@ -1,5 +1,6 @@
 import os
 import time
+import csv
 import numpy as np
 from argparse import ArgumentParser
 import tensorflow as tf
@@ -7,6 +8,7 @@ import tensorflow as tf
 import gans
 from data_generation import mnist, stress_strain
 from utils import preprocessing, plotting
+#from visualization import plot_losses, plot_dist
 
 if __name__ == '__main__':
     parser = ArgumentParser(description = "GANs for stress-strain curve generation.")
@@ -15,12 +17,12 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--loss', default='wgan_gp', type=str)
     parser.add_argument('-opt', '--optimizer', default='adam', type=str)
     parser.add_argument('-e', '--epochs', default=50, type=int)
-    parser.add_argument('-bs', '--batch_size', default=256, type=int) # Remember to automatically set in case of default
+    parser.add_argument('-bs', '--batch_size', default=16, type=int) # Remember to automatically set in case of default
     parser.add_argument('-ci','--critic_iter', default=5, type=int)
     #parser.add_argument('-ci','--critic_iter', nargs='+', default=[0], type=int)
     parser.add_argument('-la','--LAMBDA', default=0.1, type=float)
     #parser.add_argument('-la','--lambda', nargs='+', help='<Required> Set flag', required=True)
-    parser.add_argument('-nd','--noise_dim', default=3, type=int)
+    parser.add_argument('-nd','--noise_dim', type=int, help='<Required> Set flag', required=True)
 
     parser.add_argument('-lr', '--learning_rate', default=1e-4, type=float)
     parser.add_argument('-b1', '--beta1', default=0.5, type=float)
@@ -69,3 +71,14 @@ if __name__ == '__main__':
     
     # Train
     gan.train(train_dataset, args.epochs, args.batch_size, args.noise_dim, args.LAMBDA, args.critic_iter)
+
+    # Generate Examples
+    num_examples = 10000
+    seed = tf.random.normal([num_examples, args.noise_dim])
+
+    pred = generator(seed, training=False)
+    postproc_pred = scaler.inverse_transform(pred)
+    
+    if args.dataset == 'stress_strain':
+        # Save Data
+        np.savetxt(model_dir + '/data_output.csv', postproc_pred, delimiter=",")

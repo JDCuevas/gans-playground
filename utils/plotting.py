@@ -16,6 +16,20 @@ def plot(variable, labels, x_label, y_label, title, img_name):
     plt.savefig(img_name + '.png')
     plt.close()
 
+def plot_across(variable, labels, x_label, y_label, title):
+    for values, label in zip(variable, labels):
+        plt.plot(values, label=label)
+
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.legend()
+    plt.title(title)
+
+def plot_hist_across(x_values, y_values, y_label, axes):
+    for i in range(len(x_values)):
+        sns.distplot(y_values[:, i], bins=20, label=y_label, ax=axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1])
+        axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1].set(xlim=(np.min(y_values), np.max(y_values)), xlabel='stresses at strain of %.2f' % x_values[i])
+
 
 def plot_scatter(y_values, x_values, labels, x_label, y_label, title, img_name):
     for y_value, label in zip(y_values, labels):
@@ -82,7 +96,6 @@ def plot_all_hist(x_values, y_values, y_values_2, img_name):
     plt.tight_layout()
     plt.savefig(img_name + '.png')
     plt.close()
-
 
 def plot_individual_sample(sample, sample_output, n, img_name):
     fig = plt.figure(n)

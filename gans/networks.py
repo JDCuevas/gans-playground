@@ -96,7 +96,7 @@ class GAN():
             print('Time for epoch {} is {:.5f} sec'.format(epoch + 1, time.time() - start))
             print("Discriminator loss: {:.4f}\t Generator loss: {:.4f}\n".format(disc_loss.numpy(), gen_loss.numpy()))
             
-            losses_per_epoch.append({'epoch' : epoch, 'discriminator loss' : disc_loss, 'generator loss' : gen_loss})
+            losses_per_epoch.append({'epoch' : epoch, 'discriminator loss' : disc_loss.numpy(), 'generator loss' : gen_loss.numpy()})
 
         # Save loss data
         if save_losses:
@@ -106,4 +106,5 @@ class GAN():
 
                 writer.writeheader()
                 writer.writerows(losses_per_epoch)
+        
         
