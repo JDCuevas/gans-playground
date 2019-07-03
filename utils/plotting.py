@@ -1,8 +1,11 @@
+import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
+
+from data_generation import mnist
 
 def plot(variable, labels, x_label, y_label, title, img_name):
     for values, label in zip(variable, labels):
@@ -25,10 +28,13 @@ def plot_across(variable, labels, x_label, y_label, title):
     plt.legend()
     plt.title(title)
 
-def plot_hist_across(x_values, y_values, y_label, axes):
+def plot_hist_across(x_values, y_values, y_label, axes, color=None):
     for i in range(len(x_values)):
-        sns.distplot(y_values[:, i], bins=20, label=y_label, ax=axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1])
-        axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1].set(xlim=(np.min(y_values), np.max(y_values)), xlabel='stresses at strain of %.2f' % x_values[i])
+        if color:
+            sns.distplot(y_values[:, i], bins=20, label=y_label, color=color, ax=axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1])
+        else:
+            sns.distplot(y_values[:, i], bins=20, label=y_label, ax=axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1])
+        axes[i % int(len(x_values)/2), 0 if i < len(x_values)/2 else 1].set(xlim=(np.min(y_values), np.max(y_values)), xlabel='stresses at strain of %.3f' % x_values[i])
 
 
 def plot_scatter(y_values, x_values, labels, x_label, y_label, title, img_name):
@@ -115,3 +121,22 @@ def plot_violinplot(x_values, y_values, x_label, y_label, img_name):
     ax.set(xlabel=x_label, ylabel=y_label)
     plt.savefig(img_name + '.png')
     plt.close()
+
+def generate_and_save_images(model, epoch, test_input, model_dir):
+        # Notice `training` is set to False.
+        # This is so all layers run in inference mode (batchnorm).
+        predictions = model(test_input, training=False)
+
+        if test_input.shape[0] % 2 == 0:
+            dims = math.sqrt(test_input.shape[0])
+        else:
+            dims = math.sqrt(test_input.shape[0] - 1)
+
+        fig = plt.figure(figsize=(dims,dims))
+
+        for i in range(predictions.shape[0]):
+            plt.subplot(dims,dims, i+1)
+            plt.imshow(mnist.MNIST_Scaler().inverse_transform(predictions[i, :, :, 0]), cmap='gray')
+            plt.axis('off')
+
+        plt.savefig(model_dir + '/image_at_epoch_{:04d}.png'.format(epoch))

@@ -1,17 +1,16 @@
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn import preprocessing as skpreproc
 from data_generation import mnist
 import tensorflow as tf
 
 def standardize(data):
-    scaler = StandardScaler()
+    scaler = skpreproc.StandardScaler()
     scaler.fit(data)
     standardized_data = scaler.transform(data)
 
     return standardized_data, scaler
 
-
 def normalize(data):
-    scaler = MinMaxScaler()
+    scaler = skpreproc.MinMaxScaler()
     scaler.fit(data)
     normalized_data = scaler.transform(data)
 

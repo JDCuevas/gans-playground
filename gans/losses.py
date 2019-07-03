@@ -40,22 +40,42 @@ def get_loss_fns(loss_fn):
     return generator_loss, discriminator_loss
 
 def gradient_penalty(discriminator, real, fake, BATCH_SIZE):
-        real = tf.cast(real, tf.float32)
+    real = tf.cast(real, tf.float32)
+    
+    def _interpolate(a, b):
+        alpha = tf.random.uniform(shape=[BATCH_SIZE, 1], minval=0., maxval=1.)
+        inter = alpha * a + ((1 - alpha) * b)
         
-        def _interpolate(a, b):
-            alpha = tf.random.uniform(shape=[BATCH_SIZE, 1], minval=0., maxval=1.)
-            inter = alpha * a + ((1 - alpha) * b)
-            
-            return inter
+        return inter
 
-        x = _interpolate(real, fake)
+    x = _interpolate(real, fake)
+    
+    with tf.GradientTape() as t:
+        t.watch(x)
+        pred = discriminator(x)
         
-        with tf.GradientTape() as t:
-            t.watch(x)
-            pred = discriminator(x)
-            
-        grad = t.gradient(pred, x)
-        slopes = tf.sqrt(tf.reduce_sum(tf.square(grad), axis=[1]))
-        gp = tf.reduce_mean((slopes - 1) ** 2)
-        
-        return gp
+    grad = t.gradient(pred, x)
+    slopes = tf.sqrt(tf.reduce_sum(tf.square(grad), axis=[1]))
+    gp = tf.reduce_mean((slopes - 1) ** 2)
+    
+    return gp
+
+def _gradient_penalty(discriminator, real, fake, BATCH_SIZE):
+    real = tf.cast(real, tf.float32)
+
+    def _interpolate(a, b):
+        shape = [tf.shape(a)[0]] + [1] * (a.shape.ndims - 1)
+        alpha = tf.random.uniform(shape=shape, minval=0., maxval=1.)
+        inter = a + alpha * (b - a)
+        inter.set_shape(a.shape)
+        return inter
+
+    x = _interpolate(real, fake)
+    with tf.GradientTape() as t:
+        t.watch(x)
+        pred = discriminator(x)
+    grad = t.gradient(pred, x)
+    norm = tf.norm(tf.reshape(grad, [tf.shape(grad)[0], -1]), axis=1)
+    gp = tf.reduce_mean((norm - 1.)**2)
+
+    return gp

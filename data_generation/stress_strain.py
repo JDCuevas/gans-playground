@@ -33,7 +33,6 @@ class StressStrainDS:
         
         with h5py.File('./datasets/stress_strain.hdf5', 'w') as f:
             f.create_dataset("stress_curves", data=stresses)
-            f.create_dataset("strains", data=strains)
 
     def load_dataset(self):
         try:

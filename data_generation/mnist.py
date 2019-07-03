@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 import h5py
 
@@ -12,6 +13,13 @@ class MNISTDS:
         # Reshape to (n_samples, width, height, n_channels)
         train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
         
+        if not os.path.exists(os.path.dirname('./datasets/')):
+            try:
+                os.makedirs(os.path.dirname('./datasets/'))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
+
         with h5py.File('./datasets/mnist.hdf5', 'w') as f:
             f.create_dataset("images", data=train_images)
 

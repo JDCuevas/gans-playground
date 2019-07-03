@@ -5,10 +5,12 @@ import functools
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
-from gans.losses import get_loss_fns, gradient_penalty
+
+from gans.losses import get_loss_fns, gradient_penalty, _gradient_penalty
+from utils import plotting
 
 class GAN():
-    def __init__(self, discriminator, generator, disc_optimizer, gen_optimizer, loss, model_dir):
+    def __init__(self, discriminator, generator, disc_optimizer, gen_optimizer, loss, model_dir, dataset_name=None, seed=None):
         self.discriminator = discriminator
         self.generator = generator
         self.discriminator_optimizer = disc_optimizer
@@ -19,6 +21,8 @@ class GAN():
         self.discriminator_loss = disc_loss
         self.generator_loss = gen_loss
 
+        self.dataset_name = dataset_name
+        self.seed = seed
         self.model_dir = model_dir
 
     @tf.function
@@ -33,7 +37,7 @@ class GAN():
             disc_loss = self.discriminator_loss(real_output, fake_output)
 
             if self.loss == 'wgan_gp':
-                gp = gradient_penalty(functools.partial(self.discriminator, training=True), batch, generated_batch, batch.shape[0])
+                gp = _gradient_penalty(functools.partial(self.discriminator, training=True), batch, generated_batch, batch.shape[0])
                 disc_loss += (gp * LAMBDA)
 
         gradients_of_discriminator = disc_tape.gradient(disc_loss, self.discriminator.trainable_variables)
@@ -78,25 +82,39 @@ class GAN():
         for epoch in range(EPOCHS):
             start = time.time()
             iteration = 0
+            bar = tqdm(total=60000)
+
+            print('\nEpoch {}'.format(epoch + 1))
 
             for batch in tqdm(dataset):
                 iter_start = time.time()
-                
                 disc_loss = self.disc_train_step(batch, BATCH_SIZE, NOISE_DIM, LAMBDA)
                 
                 if iteration % CRITIC_ITERS == 0:
                     gen_loss = self.gen_train_step(BATCH_SIZE, NOISE_DIM)
                     
-                if (iteration + 1) % 1000 == 0:
-                        print('Time for iteration {} is {:.5f} sec'.format(iteration + 1, time.time() - iter_start))
+                if (iteration + 1) % 50 == 0:
+                        print('\tTime for iteration {} is {:.5f} sec'.format(iteration + 1, time.time() - iter_start))
                     
+                # Updt progress bar
+                bar.update(BATCH_SIZE)
+                iteration += 1
+
             if (epoch + 1) % 10 == 0:
                 checkpoint.save(file_prefix = checkpoint_prefix)
                 
-            print('Time for epoch {} is {:.5f} sec'.format(epoch + 1, time.time() - start))
+            print('\nTime for epoch {} is {:.4f} sec'.format(epoch + 1, time.time() - start))
             print("Discriminator loss: {:.4f}\t Generator loss: {:.4f}\n".format(disc_loss.numpy(), gen_loss.numpy()))
             
             losses_per_epoch.append({'epoch' : epoch, 'discriminator loss' : disc_loss.numpy(), 'generator loss' : gen_loss.numpy()})
+
+            # Generate images per epoch to viualize progress overtime
+            if self.dataset_name == 'mnist':
+                plotting.generate_and_save_images(self.generator, epoch + 1, self.seed, self.model_dir)
+
+        # Generate image for last epoch
+        if self.dataset_name == 'mnist':
+                plotting.generate_and_save_images(self.generator, EPOCHS, self.seed, self.model_dir)
 
         # Save loss data
         if save_losses:
